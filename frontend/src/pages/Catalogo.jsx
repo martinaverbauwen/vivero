@@ -6,6 +6,7 @@ import jwt_decode from 'jwt-decode';
 const Catalogo = () => {
   const [productos, setProductos] = useState([]);
   const [error, setError] = useState('');
+  const [exito, setExito] = useState(''); // Mensaje de éxito
   const [carrito, setCarrito] = useState(() => {
     const saved = localStorage.getItem('carrito');
     return saved ? JSON.parse(saved) : [];
@@ -21,6 +22,14 @@ const Catalogo = () => {
       rol = null;
     }
   }
+
+  // Efecto para disparar alert() UNA sola vez cuando exito cambie
+  useEffect(() => {
+    if (exito) {
+      alert(exito);
+      setExito(''); // Limpiar para no volver a mostrar
+    }
+  }, [exito]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,13 +54,13 @@ const Catalogo = () => {
     } else {
       setCarrito([...carrito, { ...producto, cantidad: 1 }]);
     }
+    setExito('Producto agregado al carrito');
   };
 
   useEffect(() => {
     localStorage.setItem('carrito', JSON.stringify(carrito));
   }, [carrito]);
 
-  // Solo clientes pueden agregar al carrito; si no hay rol o es admin, deshabilitamos el botón
   return (
     <div className="container mt-4">
       <h2>Catálogo de Productos</h2>
@@ -65,7 +74,7 @@ const Catalogo = () => {
                   src={prod.imagen}
                   className="card-img-top"
                   alt={prod.nombre}
-                  style={{ objectFit: 'cover', height: '200px' }}
+                  style={{ objectFit: 'cover', height: '300px' }}
                 />
               ) : (
                 <div
