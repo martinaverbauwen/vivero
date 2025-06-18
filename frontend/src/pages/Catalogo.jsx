@@ -7,7 +7,38 @@ import { Link } from 'react-router-dom';
 const Catalogo = () => {
   const [productos, setProductos] = useState([]);
   const [error, setError] = useState('');
+  const [exito, setExito] = useState('');        // Mensaje de éxito
+  const [carrito, setCarrito] = useState(() => { // Estado del carrito
+    const saved = localStorage.getItem('carrito');
+    return saved ? JSON.parse(saved) : [];
+  });
 
+  // Obtener rol desde token
+  const token = localStorage.getItem('token');
+  let rol = null;
+  if (token) {
+    try {
+      const dec = jwt_decode(token);
+      rol = dec.rol;
+    } catch {
+      rol = null;
+    }
+  }
+
+  // Alert() solo una vez al cambiar exito
+  useEffect(() => {
+    if (exito) {
+      alert(exito);
+      setExito('');
+    }
+  }, [exito]);
+
+  // Guardar carrito en localStorage
+  useEffect(() => {
+    localStorage.setItem('carrito', JSON.stringify(carrito));
+  }, [carrito]);
+
+  // Traer productos
   useEffect(() => {
     (async () => {
       try {
@@ -19,6 +50,22 @@ const Catalogo = () => {
     })();
   }, []);
 
+  // Función para agregar al carrito
+  const agregarAlCarrito = (producto) => {
+    const existe = carrito.find((p) => p.id === producto.id);
+    if (existe) {
+      setCarrito(
+        carrito.map((p) =>
+          p.id === producto.id ? { ...p, cantidad: p.cantidad + 1 } : p
+        )
+      );
+    } else {
+      setCarrito([...carrito, { ...producto, cantidad: 1 }]);
+    }
+    setExito('Producto agregado al carrito');
+  };
+
+  // Cortar la descripción si es muy larga
   const truncate = (text, max = 100) =>
     text.length > max ? text.slice(0, max) + '…' : text;
 
@@ -35,7 +82,7 @@ const Catalogo = () => {
                   src={prod.imagen}
                   className="card-img-top"
                   alt={prod.nombre}
-                  style={{ objectFit: 'cover', height: '200px' }}
+                  style={{ objectFit: 'cover', height: '300px' }}
                 />
               ) : (
                 <div
@@ -51,10 +98,18 @@ const Catalogo = () => {
                 <div className="mt-auto">
                   <Link
                     to={`/productos/${prod.id}`}
-                    className="btn btn-primary w-100"
+                    className="btn btn-primary w-100 mb-2"
                   >
                     Ver Producto
                   </Link>
+                  {rol === 'cliente' && (
+                    <button
+                      className="btn btn-success w-100"
+                      onClick={() => agregarAlCarrito(prod)}
+                    >
+                      Agregar al carrito
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -66,4 +121,3 @@ const Catalogo = () => {
 };
 
 export default Catalogo;
-
