@@ -1,8 +1,125 @@
 /* frontend/src/styles/custom.css */
-.container {
-  max-width: 1000px;
+
+/* 1) Variables de color para un tema suave */
+:root {
+  --primary: #28a745;         /* verde Vivero */
+  --primary-light: #e9f7ef;   /* fondo muy suave */
+  --secondary: #6c757d;       /* grises para textos */
+  --card-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
+/* 2) Fondo general y tipografía */
+body {
+  background-color: var(--primary-light);
+  color: var(--secondary);
+  font-family: 'Segoe UI', sans-serif;
+  line-height: 1.6;
+}
+
+/* 3) Contenedor principal más aireado */
+.container {
+  max-width: 1100px;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+/* 4) Cards homogéneas y consistentes */
 .card {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--card-shadow);
+  border: none;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+.card:hover {
+  transform: translateY(-4px);
+}
+
+/* 5) Encabezados con primario */
+h1, h2, h3, h4, h5 {
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+/* 6) Botones personalizados */
+.btn-primary {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  transition: background-color 0.2s ease;
+}
+.btn-primary:hover {
+  background-color: darken(var(--primary), 10%);
+}
+.btn-success {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  transition: background-color 0.2s ease;
+}
+.btn-success:hover {
+  background-color: darken(var(--primary), 10%);
+}
+.btn-outline-secondary {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+.btn-outline-secondary:hover {
+  background-color: var(--primary);
+  color: #fff;
+}
+
+/* 7) Alertas suaves */
+.alert-success {
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+  color: #155724;
+}
+.alert-danger {
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+  color: #721c24;
+}
+
+/* 8) Formularios más limpios */
+.form-control {
+  border-radius: 0.25rem;
+  border: 1px solid #ced4da;
+  transition: border-color 0.2s ease;
+}
+.form-control:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 0.2rem rgba(40,167,69,0.25);
+}
+
+/* 9) Imágenes responsivas dentro de cards */
+.card-img-top {
+  object-fit: cover;
+  height: 200px;
+}
+
+/* 10) Links del navbar */
+.navbar {
+  background-color: var(--primary);
+}
+.navbar .nav-link {
+  color: #fff !important;
+  margin-right: 1rem;
+}
+.navbar .nav-link:hover {
+  color: #e2f3e9 !important;
+}
+
+/* 11) “Hero” de bienvenida */
+.page-hero {
+  padding: 4rem 1rem;
+  background-color: #fff;
+  border-radius: 0.5rem;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.page-hero h1 {
+  font-size: 2.5rem;
+}
+.page-hero p {
+  font-size: 1.125rem;
+  color: var(--secondary);
 }

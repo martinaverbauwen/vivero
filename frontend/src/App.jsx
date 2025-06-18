@@ -6,6 +6,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 import Welcome from './pages/Welcome';
 import Catalogo from './pages/Catalogo';
+import ProductoDetalle from './pages/ProductoDetalle';
 import ProductosAdmin from './pages/ProductosAdmin';
 
 import Login from './pages/Login';
@@ -71,6 +72,16 @@ const App = () => {
             </ProtectedRoute>
           }
         />
+  
+       {/* Detalle público para cliente y admin */}
+       <Route
+         path="/productos/:id"
+         element={
+           <ProtectedRoute>
+             <ProductoDetalle />
+           </ProtectedRoute>
+         }
+      />
 
         {/* Administración de productos */}
         <Route

@@ -2,16 +2,18 @@
 import React, { useEffect, useState } from 'react';
 import { getProductos } from '../api/productoService';
 import jwt_decode from 'jwt-decode';
+import { Link } from 'react-router-dom';
 
 const Catalogo = () => {
   const [productos, setProductos] = useState([]);
   const [error, setError] = useState('');
-  const [exito, setExito] = useState(''); // Mensaje de éxito
-  const [carrito, setCarrito] = useState(() => {
+  const [exito, setExito] = useState('');        // Mensaje de éxito
+  const [carrito, setCarrito] = useState(() => { // Estado del carrito
     const saved = localStorage.getItem('carrito');
     return saved ? JSON.parse(saved) : [];
   });
 
+  // Obtener rol desde token
   const token = localStorage.getItem('token');
   let rol = null;
   if (token) {
@@ -23,26 +25,32 @@ const Catalogo = () => {
     }
   }
 
-  // Efecto para disparar alert() UNA sola vez cuando exito cambie
+  // Alert() solo una vez al cambiar exito
   useEffect(() => {
     if (exito) {
       alert(exito);
-      setExito(''); // Limpiar para no volver a mostrar
+      setExito('');
     }
   }, [exito]);
 
+  // Guardar carrito en localStorage
   useEffect(() => {
-    const fetchData = async () => {
+    localStorage.setItem('carrito', JSON.stringify(carrito));
+  }, [carrito]);
+
+  // Traer productos
+  useEffect(() => {
+    (async () => {
       try {
         const data = await getProductos();
         setProductos(data);
       } catch {
         setError('No se pudieron cargar los productos.');
       }
-    };
-    fetchData();
+    })();
   }, []);
 
+  // Función para agregar al carrito
   const agregarAlCarrito = (producto) => {
     const existe = carrito.find((p) => p.id === producto.id);
     if (existe) {
@@ -57,9 +65,9 @@ const Catalogo = () => {
     setExito('Producto agregado al carrito');
   };
 
-  useEffect(() => {
-    localStorage.setItem('carrito', JSON.stringify(carrito));
-  }, [carrito]);
+  // Cortar la descripción si es muy larga
+  const truncate = (text, max = 100) =>
+    text.length > max ? text.slice(0, max) + '…' : text;
 
   return (
     <div className="container mt-4">
@@ -86,16 +94,23 @@ const Catalogo = () => {
               )}
               <div className="card-body d-flex flex-column">
                 <h5 className="card-title">{prod.nombre}</h5>
-                <p className="card-text">{prod.descripcion}</p>
-                <p className="card-text fw-bold">${prod.precio}</p>
-                {rol === 'cliente' && (
-                  <button
-                    className="btn btn-success mt-auto"
-                    onClick={() => agregarAlCarrito(prod)}
+                <p className="card-text">{truncate(prod.descripcion)}</p>
+                <div className="mt-auto">
+                  <Link
+                    to={`/productos/${prod.id}`}
+                    className="btn btn-primary w-100 mb-2"
                   >
-                    Agregar al carrito
-                  </button>
-                )}
+                    Ver Producto
+                  </Link>
+                  {rol === 'cliente' && (
+                    <button
+                      className="btn btn-success w-100"
+                      onClick={() => agregarAlCarrito(prod)}
+                    >
+                      Agregar al carrito
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -106,3 +121,4 @@ const Catalogo = () => {
 };
 
 export default Catalogo;
+
