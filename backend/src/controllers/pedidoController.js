@@ -97,13 +97,9 @@ const actualizarEstadoPedido = async (req, res) => {
   }
 };
 
-/**
- * Genera un PDF con todos los pedidos (incluye datos de usuario y detalles)
- * y lo envía como descarga.
- */
+
 const generarPdfPedidos = async (req, res) => {
   try {
-    // 1) Traer todos los pedidos con su usuario y detalles
     const pedidos = await Pedido.findAll({
       include: [
         { model: Usuario, attributes: ['nombre', 'email'] },
@@ -114,15 +110,12 @@ const generarPdfPedidos = async (req, res) => {
       ]
     });
 
-    // 2) Configurar headers para PDF
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="pedidos.pdf"');
 
-    // 3) Crear y enviar el documento
     const doc = new PDFDocument({ margin: 30 });
     doc.pipe(res);
 
-    // Título
     doc.fontSize(18).text('📄 Listado de Pedidos', { align: 'center' });
     doc.moveDown();
 
@@ -130,7 +123,7 @@ const generarPdfPedidos = async (req, res) => {
     pedidos.forEach(p => {
       doc.fontSize(12)
          .text(`Pedido #${p.id} — Cliente: ${p.Usuario.nombre} (${p.Usuario.email})`);
-      // fecha o createdAt según tu modelo
+
       if (p.fecha) {
         doc.text(`Fecha: ${new Date(p.fecha).toLocaleString()} | Estado: ${p.estado}`);
       } else if (p.createdAt) {
