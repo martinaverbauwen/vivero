@@ -1,5 +1,6 @@
 // backend/src/controllers/pedidoController.js
-const { Pedido, DetallePedido, Producto } = require('../models');
+const PDFDocument = require('pdfkit');
+const { Pedido, DetallePedido, Producto, Usuario } = require('../models');
 
 const crearPedido = async (req, res) => {
   /* Se espera en el body:
@@ -13,7 +14,7 @@ const crearPedido = async (req, res) => {
 
   try {
     let total = 0;
-    for (let item of detalles) {
+    for (let item of detalles) {  
       const producto = await Producto.findByPk(item.productoId);
       if (!producto) throw new Error(`Producto ID:${item.productoId} no existe.`);
       if (producto.stock < item.cantidad) {
@@ -96,9 +97,65 @@ const actualizarEstadoPedido = async (req, res) => {
   }
 };
 
+/**
+ * Genera un PDF con todos los pedidos (incluye datos de usuario y detalles)
+ * y lo envía como descarga.
+ */
+const generarPdfPedidos = async (req, res) => {
+  try {
+    // 1) Traer todos los pedidos con su usuario y detalles
+    const pedidos = await Pedido.findAll({
+      include: [
+        { model: Usuario, attributes: ['nombre', 'email'] },
+        { 
+          model: DetallePedido,
+          include: [{ model: Producto, attributes: ['nombre', 'precio'] }]
+        }
+      ]
+    });
+
+    // 2) Configurar headers para PDF
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="pedidos.pdf"');
+
+    // 3) Crear y enviar el documento
+    const doc = new PDFDocument({ margin: 30 });
+    doc.pipe(res);
+
+    // Título
+    doc.fontSize(18).text('📄 Listado de Pedidos', { align: 'center' });
+    doc.moveDown();
+
+    // Detalle de cada pedido
+    pedidos.forEach(p => {
+      doc.fontSize(12)
+         .text(`Pedido #${p.id} — Cliente: ${p.Usuario.nombre} (${p.Usuario.email})`);
+      // fecha o createdAt según tu modelo
+      if (p.fecha) {
+        doc.text(`Fecha: ${new Date(p.fecha).toLocaleString()} | Estado: ${p.estado}`);
+      } else if (p.createdAt) {
+        doc.text(`Fecha: ${p.createdAt.toLocaleString()} | Estado: ${p.estado}`);
+      }
+      doc.moveDown(0.3);
+
+      p.DetallePedidos.forEach(d => {
+        doc.text(`   • ${d.cantidad} × ${d.Producto.nombre} @ $${d.Producto.precio}`);
+      });
+
+      doc.moveDown();
+    });
+
+    doc.end();
+  } catch (err) {
+    console.error('Error generando PDF:', err);
+    res.status(500).json({ msg: 'Error generando PDF' });
+  }
+};
+
 module.exports = {
   crearPedido,
   listarPedidosCliente,
   listarPedidosAdmin,
-  actualizarEstadoPedido
+  actualizarEstadoPedido,
+  generarPdfPedidos
 };

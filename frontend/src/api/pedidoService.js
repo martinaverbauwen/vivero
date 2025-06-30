@@ -1,4 +1,3 @@
-// frontend/src/api/pedidoService.js
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -31,6 +30,21 @@ export const actualizarEstadoPedido = async (id, estado, token) => {
     `${API_URL}/pedidos/estado/${id}`,
     { estado },
     { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return resp.data;
+};
+
+/**
+ * Descarga un PDF con todos los pedidos (sólo admin)
+ * El responseType 'blob' permite tratarlo como un archivo.
+ */
+export const descargarPdfPedidos = async (token) => {
+  const resp = await axios.get(
+    `${API_URL}/pedidos/pdf`,
+    {
+      responseType: 'blob',
+      headers: { Authorization: `Bearer ${token}` }
+    }
   );
   return resp.data;
 };

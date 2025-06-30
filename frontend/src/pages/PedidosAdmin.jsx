@@ -1,8 +1,8 @@
-// frontend/src/pages/PedidosAdmin.jsx
 import React, { useState, useEffect } from 'react';
 import {
   listarPedidosAdmin,
-  actualizarEstadoPedido
+  actualizarEstadoPedido,
+  descargarPdfPedidos        // importamos la nueva función
 } from '../api/pedidoService';
 import jwt_decode from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
@@ -40,10 +40,40 @@ const PedidosAdmin = () => {
     }
   };
 
+  // Nuevo handler para descargar el PDF con autorización
+  const handleDownloadPdf = async () => {
+    setError('');
+    try {
+      const blobData = await descargarPdfPedidos(token);
+      const blob = new Blob([blobData], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'pedidos.pdf';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      console.error(err);
+      setError('Error al descargar PDF.');
+    }
+  };
+
   return (
     <div className="container mt-4">
       <h2>Administrar Pedidos</h2>
+
+      {/* Botón para generar PDF */}
+      <button
+        className="btn btn-primary mb-3"
+        onClick={handleDownloadPdf}
+      >
+        Imprimir en formato PDF
+      </button>
+
       {error && <div className="alert alert-danger">{error}</div>}
+
       {pedidos.length === 0 ? (
         <p>No hay pedidos.</p>
       ) : (
